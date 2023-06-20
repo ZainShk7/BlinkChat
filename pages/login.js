@@ -1,19 +1,35 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { IoLogoGoogle, IoLogoFacebook } from "react-icons/io";
 import { auth } from "../firebase/firebase";
 import { useAuth } from "@/context/authContext";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import ToastMessages from "@/components/ToastMessages";
+import { toast } from "react-toastify";
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 
+const gProvider = new GoogleAuthProvider();
 const Login = () => {
   const router = useRouter();
   const { currentUser, isLoading } = useAuth();
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     if (!isLoading && currentUser) router.push("/");
   }, [currentUser, isLoading]);
 
+  const signInWithGoogle = async () => {
+    try {
+      await signInWithPopup(auth, gProvider);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const handleSubmit = async (evt) => {
     evt.preventDefault();
     const email = evt.target[0].value;
@@ -24,10 +40,30 @@ const Login = () => {
       console.error("Error in signInWithEmailAndPassword: ", error);
     }
   };
+
+  const resetPassword = async () => {
+    try {
+      toast.promise(
+        async () => {
+          await sendPasswordResetEmail(auth, email);
+        },
+        {
+          pending: "Generating Reset Link",
+          success: "Reset Email Sent to your registered Email 👌",
+          error: "Email-ID Invalid 🤯",
+        },
+        { autoClose: 3000 }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return isLoading || (!isLoading && currentUser) ? (
     "Loader....."
   ) : (
     <div className="h-[100vh] flex justify-center items-center bg-c1">
+      <ToastMessages />
       <div className="flex flex-col items-center">
         <div className="text-center">
           <div className="text-4xl font-bold">Blink Chat</div>
@@ -37,7 +73,10 @@ const Login = () => {
         </div>
         {/* buttons container */}
         <div className="flex items-center gap-2 w-full mt-10 mb-5">
-          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 w-1/2 h-14 rounded-md cursor-pointer p-[1px]">
+          <div
+            className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 w-1/2 h-14 rounded-md cursor-pointer p-[1px]"
+            onClick={signInWithGoogle}
+          >
             <div className="flex items-center justify-center gap-3 text-white font-semibold bg-c1 w-full h-full rounded-md">
               <IoLogoGoogle size={24} />
               <span>Login With Google</span>
@@ -52,7 +91,7 @@ const Login = () => {
           </div>
         </div>
         {/* OR Div */}
-        <div className="flex items-center gap-1">
+        <div className="fle=>{x items-center gap-1">
           <span className="w-5 h-[1px] bg-c3"></span>
           <span className="text-c3 font-semibold">OR</span>
           <span className="w-5 h-[1px] bg-c3"></span>
@@ -67,6 +106,7 @@ const Login = () => {
             placeholder="Email"
             className="w-full h-14 bg-c5 rounded-xl outline-none px-5 text-c3"
             autoComplete="off"
+            onChange={(evt) => setEmail(evt.target.value)}
           />
           <input
             type="password"
@@ -75,7 +115,9 @@ const Login = () => {
             autoComplete="off"
           />
           <div className="text-right w-full text-c3">
-            <span className="cursor-pointer">Forgot Password</span>
+            <span className="cursor-pointer" onClick={resetPassword}>
+              Forgot Password
+            </span>
           </div>
           <button className="mt-4 w-full h-14 rounded-xl outline-none text-base font-semibold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
             Login to your Account
