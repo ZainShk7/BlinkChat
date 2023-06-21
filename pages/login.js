@@ -5,6 +5,7 @@ import { IoLogoGoogle, IoLogoFacebook } from "react-icons/io";
 import { auth } from "../firebase/firebase";
 import { useAuth } from "@/context/authContext";
 import ToastMessages from "@/components/ToastMessages";
+import Loader from "@/components/Loader";
 import { toast } from "react-toastify";
 import {
   signInWithEmailAndPassword,
@@ -60,7 +61,7 @@ const Login = () => {
   };
 
   return isLoading || (!isLoading && currentUser) ? (
-    "Loader....."
+    <Loader />
   ) : (
     <div className="h-[100vh] flex justify-center items-center bg-c1">
       <ToastMessages />
