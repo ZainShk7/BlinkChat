@@ -9,6 +9,7 @@ import {
   updateProfile,
   createUserWithEmailAndPassword,
 } from "firebase/auth";
+import Loader from "@/components/Loader";
 import { profileColors } from "@/utils";
 import { db, auth } from "@/firebase/firebase";
 import { doc, setDoc } from "firebase/firestore";
@@ -62,7 +63,7 @@ const Register = () => {
   };
 
   return isLoading || (!isLoading && currentUser) ? (
-    "Loader....."
+    <Loader />
   ) : (
     <div className="h-[100vh] flex justify-center items-center bg-c1">
       <div className="flex flex-col items-center">
